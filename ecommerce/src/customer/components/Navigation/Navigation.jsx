@@ -10,26 +10,36 @@ import {
 import { Avatar, Button, Menu, MenuItem } from "@mui/material";
 import { deepPurple } from "@mui/material/colors";
 import { navigationdata } from "./NavigationData";
+import { useLocation, useNavigate } from "react-router-dom";
 
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
 }
 
-export default function () {
+export default function Navigation() {
   
   const [open, setOpen] = useState(false);
-
+  const navigate = useNavigate();
+  // const dispatch = useDispatch();
+  // const { auth,cart } = useSelector((store) => store);
+  const [openAuthModal, setOpenAuthModal]= useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
   const openUserMenu = Boolean(anchorEl);
-  const colorValue = searchParams.get("color");
-  const sizeValue = searchParams.get("size");
-  const price = searchParams.get("price");
-  const disccount = searchParams.get("disccout");
-  const sortValue = searchParams.get("sort");
-  const pageNumber = searchParams.get("page") || 1;
-  const stock = searchParams.get("stock");
+  const jwt = localStorage.getItem("jwt");
+  const location=useLocation();
 
+
+
+
+
+  // const colorValue = searchParams.get("color");
+  // const sizeValue = searchParams.get("size");
+  // const price = searchParams.get("price");
+  // const disccount = searchParams.get("disccout");
+  // const sortValue = searchParams.get("sort");
+  // const pageNumber = searchParams.get("page") || 1;
+  // const stock = searchParams.get("stock");
 
   const handleUserClick = (event) => {
     setAnchorEl(event.currentTarget);
@@ -41,7 +51,7 @@ export default function () {
 
 
   const handleCategoryClick = (category, section, item, close) => {
-    // navigate(`/${category.id}/${section.id}/${item.id}`);
+    navigate(`/${category.id}/${section.id}/${item.id}`);
     close();
   };
 
@@ -166,12 +176,18 @@ export default function () {
                               className="mt-6 flex flex-col space-y-6"
                             >
                               {section.items.map((item) => (
-                                <li key={item.name} className="flow-root">
-                                  <p className="-m-2 block p-2 text-gray-500">
-                                    {"item.name"}
-                                  </p>
-                                </li>
-                              ))}
+                                              <li
+                                                key={item.name}
+                                                className="flex"
+                                              >
+                                                <p
+                                                  
+                                                  className="cursor-pointer hover:text-gray-800"
+                                                >
+                                                  {item.name}
+                                                </p>
+                                              </li>
+                                            ))}
                             </ul>
                           </div>
                         ))}
@@ -344,7 +360,14 @@ export default function () {
                                                 className="flex"
                                               >
                                                 <p
-                                                  
+                                                   onClick={() =>
+                                                    handleCategoryClick(
+                                                      category,
+                                                      section,
+                                                      item,
+                                                      close
+                                                    )
+                                                  }
                                                   className="cursor-pointer hover:text-gray-800"
                                                 >
                                                   {item.name}

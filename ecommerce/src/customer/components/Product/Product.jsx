@@ -23,10 +23,10 @@ import Radio from "@mui/material/Radio";
 import RadioGroup from "@mui/material/RadioGroup";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import FormControl from "@mui/material/FormControl";
-import FormLabel from "@mui/material/FormLabel";
-import Pagination from "@mui/material/Pagination";
-import FilterAltSharpIcon from '@mui/icons-material/FilterAltSharp';
 
+import FilterAltSharpIcon from '@mui/icons-material/FilterAltSharp';
+import { useNavigate } from 'react-router-dom';
+import { useLocation } from "react-router-dom";
 const sortOptions = [
 
     { name: 'Price: Low to High', href: '#', current: false },
@@ -37,8 +37,13 @@ function classNames(...classes) {
     return classes.filter(Boolean).join(' ')
 }
 
+
 export default function Product() {
     const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false)
+   
+    const navigate = useNavigate();
+    const location = useLocation();
+    const decodedQueryString = decodeURIComponent(location.search);
     const searchParams = new URLSearchParams(decodedQueryString);
     const colorValue = searchParams.get("color");
     const sizeValue = searchParams.get("size");
@@ -47,6 +52,7 @@ export default function Product() {
     const sortValue = searchParams.get("sort");
     const pageNumber = searchParams.get("page") || 1;
     const stock = searchParams.get("stock");
+
 
     const handleFilter = (value, sectionId) => {
         const searchParams = new URLSearchParams(location.search);
@@ -75,8 +81,13 @@ export default function Product() {
         navigate({ search: `?${query}` });
       };
     
-
-
+      
+    const handleRadioFilterChange = (e, sectionId) => {
+    const searchParams = new URLSearchParams(location.search);
+    searchParams.set(sectionId, e.target.value);
+    const query = searchParams.toString();
+    navigate({ search: `?${query}` });
+  };
 
 
 
@@ -341,12 +352,16 @@ export default function Product() {
                                   className="flex items-center"
                                 >
                                   <input
+                                  
                                     id={`filter-${section.id}-${optionIdx}`}
                                     name={`${section.id}[]`}
                                     defaultValue={option.value}
                                     type="checkbox"
                                     defaultChecked={option.checked}
                                     className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                                    onChange={() =>
+                                        handleFilter(option.value, section.id)
+                                      }
                                    
                                   />
                                   <label
@@ -401,10 +416,13 @@ export default function Product() {
                                                         >
                                                             {section.options.map((option, optionIdx) => (
                                                                 <FormControlLabel
+                                                                key={optionIdx}
                                                                     value={option.value}
                                                                     control={<Radio />}
                                                                     label={option.label}
-
+                                                                    onChange={(e) =>
+                                                                        handleRadioFilterChange(e, section.id)
+                                                                    }
                                                                 />
                                                             ))}
                                                         </RadioGroup>
