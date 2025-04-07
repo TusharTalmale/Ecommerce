@@ -3,10 +3,12 @@ import { Box, Grid, Typography } from "@mui/material";
 import StarIcon from "@mui/icons-material/Star";
 import FiberManualRecordIcon from "@mui/icons-material/FiberManualRecord";
 import AdjustIcon from "@mui/icons-material/Adjust";
+import { useNavigate } from 'react-router-dom';
 
 const OrderCard = () => {
+  const navigate = useNavigate();
   return (
-    <Box className="p-6 bg-white rounded-2xl shadow-md hover:shadow-xl border border-gray-200 transition-shadow duration-300 mb-4">
+    <Box  onClick={() => navigate(`/account/order/${5}`)} className="p-6 bg-white rounded-2xl shadow-md hover:shadow-xl border border-gray-200 transition-shadow duration-300 mb-4">
 
 
       <Grid spacing={2} container sx={{ justifyContent: "space-between" }}>
