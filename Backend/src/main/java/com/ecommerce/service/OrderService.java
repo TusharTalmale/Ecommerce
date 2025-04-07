@@ -1,4 +1,4 @@
-package com.ecommerce.repository;
+package com.ecommerce.service;
 
 import com.ecommerce.exception.OrderException;
 import com.ecommerce.model.Address;
@@ -8,7 +8,7 @@ import com.ecommerce.model.User;
 import java.util.List;
 
 public interface OrderService {
-    public Order createOrder(User user, Address shippingAdress);
+    public Order createOrder(User user, Address shippingAddress);
 
     public Order findOrderById(Long orderId) throws OrderException;
 
