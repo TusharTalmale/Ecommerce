@@ -37,7 +37,7 @@ public class OrderItem {
     private LocalDateTime deliveryDate;
 
     public OrderItem() {
-        // TODO Auto-generated constructor stub
+
     }
 
     @Override
