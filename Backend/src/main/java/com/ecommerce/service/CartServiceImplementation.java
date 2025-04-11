@@ -8,7 +8,9 @@ import com.ecommerce.model.User;
 import com.ecommerce.repository.CartRepository;
 import com.ecommerce.request.AddItemRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
+@Service
 public class CartServiceImplementation implements CartService{
     @Autowired private CartRepository cartRepository;
     @Autowired private CartItemService cartItemService;

@@ -48,17 +48,17 @@ public class Product {
     private String color;
 
     @Embedded
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     @Column(name = "sizes")
     private Set<Size> sizes=new HashSet<>();
 
     @Column(name = "image_url")
     private String imageUrl;
 
-    @OneToMany(mappedBy = "product",cascade = CascadeType.ALL,orphanRemoval = true)
+    @OneToMany(mappedBy = "product",cascade = CascadeType.ALL,orphanRemoval = true , fetch = FetchType.EAGER)
     private List<Rating> ratings=new ArrayList<>();
 
-    @OneToMany(mappedBy = "product",cascade = CascadeType.ALL,orphanRemoval = true)
+    @OneToMany(mappedBy = "product",cascade = CascadeType.ALL,orphanRemoval = true, fetch = FetchType.EAGER)
     private List<Review>reviews=new ArrayList<>();
 
     @Column(name = "num_ratings")

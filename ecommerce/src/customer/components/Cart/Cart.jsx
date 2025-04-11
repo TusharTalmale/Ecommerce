@@ -1,28 +1,33 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
 import CartItem from "./CartItem";
 import { Button } from "@mui/material";
 import { useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { getCart } from "../../../Redux/Customers/Cart/Action";
+import cartReducer from "../../../Redux/Customers/Cart/Reducer";
+
 
 const Cart = () => {
+  const dispatch = useDispatch();
+  
+  const jwt = localStorage.getItem("jwt");
   const navigate = useNavigate();
-  const [cart, setCart] = useState({ cartItems: [], cart: {} });
 
+  const {cart}=useSelector(store=>store);
   useEffect(() => {
-    // Fetch cart data from local storage or API
-    const cartData = JSON.parse(localStorage.getItem("cart")) || { cartItems: [], cart: {} };
-    setCart(cartData);
-  }, []);
+    dispatch(getCart(jwt));
+  }, [dispatch]);
 
   return (
     <div className="">
        
-      {/* {cart.cartItems.length > 0 && ( */}
+      {cartReducer.cartItems.length > 0 && (
         <div className="lg:grid grid-cols-3 lg:px-16 relative">
           <div className="lg:col-span-2 lg:px-5 bg-white pb-5">
             <div className="space-y-3">
             <CartItem></CartItem>
          { [1,1,1,1].map((item) => (
-                <CartItem />
+                <CartItem item={item} showButton ={true}/>
               ))}
             </div>
           </div>
@@ -62,7 +67,7 @@ const Cart = () => {
             </div>
           </div>
         </div>
-      {/* )} */}
+       )}
     </div>
   );
 };

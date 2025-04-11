@@ -7,6 +7,7 @@ import com.ecommerce.repository.UserRepository;
 import com.ecommerce.request.LoginRequest;
 import com.ecommerce.response.AuthResponse;
 
+import com.ecommerce.service.CartService;
 import com.ecommerce.service.CustomeUserServiceImplementation;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -45,7 +46,7 @@ public class AuthController {
     private JwtTokenProvider jwtTokenProvider;
     @Autowired
     private CustomeUserServiceImplementation customeUserServiceImplementation;
-
+    @Autowired private CartService cartService;
 
     //Register
     @PostMapping("/signup")
@@ -70,7 +71,7 @@ public class AuthController {
         createdUser.setPassword(passwordEncoder.encode(password)); //set password encoding
 
         User savedUser = userRepository.save(createdUser); // save in repo
-
+        cartService.createCart(savedUser);
         // generate jwt token with the help of jwtTokenProvider class
         Authentication authentication = new UsernamePasswordAuthenticationToken(email, password); // its internal method of spring
         String token = jwtTokenProvider.generateToken(authentication);

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { Fragment, useEffect, useState } from 'react'
 import {
     Dialog,
     DialogBackdrop,
@@ -12,12 +12,17 @@ import {
     MenuButton,
     MenuItem,
     MenuItems,
+    Transition,
 } from '@headlessui/react'
 import { XMarkIcon } from '@heroicons/react/24/outline'
 import { ChevronDownIcon, FunnelIcon, MinusIcon, PlusIcon, Squares2X2Icon } from '@heroicons/react/20/solid'
 import { mens_kurta } from '../../../Data/Men/Men_kurta.js';
 import ProductCard from './ProductCard'
 import { filters, singleFilter } from './filtersdata.js'
+import {
+    findProducts,
+    findProductsByCategory,
+  } from "../../../Redux/Customers/Product/Action";
 
 import Radio from "@mui/material/Radio";
 import RadioGroup from "@mui/material/RadioGroup";
@@ -25,8 +30,10 @@ import FormControlLabel from "@mui/material/FormControlLabel";
 import FormControl from "@mui/material/FormControl";
 
 import FilterAltSharpIcon from '@mui/icons-material/FilterAltSharp';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useLocation } from "react-router-dom";
+import { useDispatch, useSelector } from 'react-redux'
+import { Backdrop, CircularProgress, Pagination } from '@mui/material'
 const sortOptions = [
 
     { name: 'Price: Low to High', href: '#', current: false },
@@ -40,18 +47,75 @@ function classNames(...classes) {
 
 export default function Product() {
     const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false)
-   
+    const dispatch = useDispatch();
+    const param = useParams();
+    const jwt = localStorage.getItem("jwt");
+    const customersProduct = useSelector((state) => state.customersProduct); // ✅
+
     const navigate = useNavigate();
     const location = useLocation();
-    const decodedQueryString = decodeURIComponent(location.search);
-    const searchParams = new URLSearchParams(decodedQueryString);
-    const colorValue = searchParams.get("color");
-    const sizeValue = searchParams.get("size");
-    const price = searchParams.get("price");
-    const disccount = searchParams.get("disccout");
-    const sortValue = searchParams.get("sort");
-    const pageNumber = searchParams.get("page") || 1;
-    const stock = searchParams.get("stock");
+    const [isLoaderOpen, setIsLoaderOpen] = useState(false);
+
+    const handleLoderClose = () => {
+        setIsLoaderOpen(false);
+      };
+    
+ // const filter = decodeURIComponent(location.search);
+ const decodedQueryString = decodeURIComponent(location.search);
+ const searchParams = new URLSearchParams(decodedQueryString);
+ const colorValue = searchParams.get("color");
+ const sizeValue = searchParams.get("size");
+ const price = searchParams.get("price");
+ const disccount = searchParams.get("disccout");
+ const sortValue = searchParams.get("sort");
+ const pageNumber = searchParams.get("page") || 1;
+ const stock = searchParams.get("stock");
+
+  const handleSortChange = (value) => {
+    const searchParams = new URLSearchParams(location.search);
+    searchParams.set("sort", value);
+    const query = searchParams.toString();
+    navigate({ search: `?${query}` });
+  };
+  const handlePaginationChange = (event, value) => {
+    const searchParams = new URLSearchParams(location.search);
+    searchParams.set("page", value);
+    const query = searchParams.toString();
+    navigate({ search: `?${query}` });
+  };
+
+
+  useEffect(() => {
+    const [minPrice, maxPrice] =
+      price === null ? [0, 0] : price.split("-").map(Number);
+    const data = {
+      category: param.lavelThree,
+      colors: colorValue || [],
+      sizes: sizeValue || [],
+      minPrice: minPrice || 0,
+      maxPrice: maxPrice || 10000,
+      minDiscount: disccount || 0,
+      sort: sortValue || "price_low",
+      pageNumber: pageNumber - 1,
+      pageSize: 10,
+      stock: stock,
+    };
+    dispatch(findProducts(data));
+  }, [
+    param.lavelThree,
+    colorValue,
+    sizeValue,
+    price,
+    disccount,
+    sortValue,
+    pageNumber,
+    stock,
+  ]);
+
+
+
+
+
 
 
     const handleFilter = (value, sectionId) => {
@@ -88,6 +152,15 @@ export default function Product() {
     const query = searchParams.toString();
     navigate({ search: `?${query}` });
   };
+
+
+  useEffect(() => {
+    if (customersProduct.loading) {
+      setIsLoaderOpen(true);
+    } else {
+      setIsLoaderOpen(false);
+    }
+  }, [customersProduct.loading]);
 
 
 
@@ -263,27 +336,41 @@ export default function Product() {
                                         />
                                     </MenuButton>
                                 </div>
-
+                                <Transition
+                                    as={Fragment}
+                                    enter="transition ease-out duration-100"
+                                    enterFrom="transform opacity-0 scale-95"
+                                    enterTo="transform opacity-100 scale-100"
+                                    leave="transition ease-in duration-75"
+                                    leaveFrom="transform opacity-100 scale-100"
+                                    leaveTo="transform opacity-0 scale-95"
+                                    >
                                 <MenuItems
                                     transition
                                     className="absolute right-0 z-10 mt-2 w-40 origin-top-right rounded-md bg-white ring-1 shadow-2xl ring-black/5 transition focus:outline-hidden data-closed:scale-95 data-closed:transform data-closed:opacity-0 data-enter:duration-100 data-enter:ease-out data-leave:duration-75 data-leave:ease-in"
                                 >
                                     <div className="py-1">
-                                        {sortOptions.map((option) => (
-                                            <MenuItem key={option.name}>
-                                                <a
-                                                    href={option.href}
-                                                    className={classNames(
-                                                        option.current ? 'font-medium text-gray-900' : 'text-gray-500',
-                                                        'block px-4 py-2 text-sm data-focus:bg-gray-100 data-focus:outline-hidden',
-                                                    )}
-                                                >
-                                                    {option.name}
-                                                </a>
-                                            </MenuItem>
-                                        ))}
+                                     {sortOptions.map((option) => (
+                                        <Menu.Item key={option.name}>
+                                        {({ active }) => (
+                                            <p
+                                            onClick={() => handleSortChange(option.query)}
+                                            className={classNames(
+                                                option.current
+                                                ? "font-medium text-gray-900"
+                                                : "text-gray-500",
+                                                active ? "bg-gray-100" : "",
+                                                "block px-4 py-2 text-sm cursor-pointer"
+                                            )}
+                                            >
+                                            {option.name}
+                                            </p>
+                                        )}
+                                        </Menu.Item>
+                                    ))}
                                     </div>
                                 </MenuItems>
+                                </Transition>
                             </Menu>
 
                             <button type="button" className="-m-2 ml-5 p-2 text-gray-400 hover:text-gray-500 sm:ml-7">
@@ -441,13 +528,38 @@ export default function Product() {
                             {/* Product grid */}
                             <div className="lg:col-span-4 w-full">
                                 <div className="mt-6 grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-4 xl:gap-x-8">
-                                    {mens_kurta.map((item, i) => <ProductCard key={i} product={item} />)}
-                                </div>
+                                {customersProduct?.products?.content?.map((item) => (
+                                        <ProductCard product={item} />
+                                                    ))}
+                                                    </div>
 
                             </div>
                         </div>
                     </section>
                 </main>
+
+                {/* pagination section */}
+                <section className="w-full px-[3.6rem]">
+                    <div className="mx-auto px-4 py-5 flex justify-center shadow-lg border rounded-md">
+                        <Pagination
+                        count={customersProduct.products?.totalPages}
+                        color="primary"
+                        className=""
+                        onChange={handlePaginationChange}
+                        />
+                    </div>
+                </section>
+
+                {/* {backdrop} */}
+                <section>
+                <Backdrop
+                    sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
+                    open={isLoaderOpen}
+                    onClick={handleLoderClose}
+                >
+                    <CircularProgress color="inherit" />
+                </Backdrop>
+                </section>
             </div>
         </div>
     )

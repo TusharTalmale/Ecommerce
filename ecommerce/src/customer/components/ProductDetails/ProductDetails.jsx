@@ -60,6 +60,10 @@ export default function ProductDetails() {
   const [activeImage, setActiveImage] = useState(null);
   const [selectedSize, setSelectedSize] = useState();
   const navigate = useNavigate();
+  
+  const handleSetActiveImage = (image) => {
+    setActiveImage(image);
+  };
   const handleAddCart =( ) =>{
     navigate("/cart")
   }

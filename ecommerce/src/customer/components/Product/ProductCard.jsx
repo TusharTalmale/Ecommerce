@@ -7,10 +7,13 @@ const ProductCard = ({ product }) => {
     const navigate = useNavigate();
 
   const { title, brand, imageUrl, price ,discountedPrice,color,discountPersent} = product;
+  const handleNavigate=()=>{
+    navigate(`/product/${product?.id}`)
+  }
 
 
   return (
-   <div onClick ={()=>navigate(`/product/${5}`)} className='productCard w-[15rem] m-3'>
+   <div onClick={handleNavigate} className='productCard w-[15rem] m-3'>
     <div className='h-[20rem]'>
         <img className='h-full w-full object-cover object-left-top' src={imageUrl} alt="" />
     </div>

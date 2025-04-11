@@ -1,4 +1,10 @@
 package com.ecommerce.user.domain;
 
-public class PaymentMethod {
+public enum PaymentMethod {
+    CREDIT_CARD,
+    DEBIT_CARD,
+    NET_BANKING,
+    UPI,
+    PAYPAL,
+    GOOGLE_PAY
 }

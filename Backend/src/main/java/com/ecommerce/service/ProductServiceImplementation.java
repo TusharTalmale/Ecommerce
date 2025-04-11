@@ -6,6 +6,7 @@ import com.ecommerce.model.Product;
 import com.ecommerce.repository.CategoryRepository;
 import com.ecommerce.repository.ProductRepository;
 import com.ecommerce.request.CreateProductRequest;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -130,12 +131,15 @@ public class ProductServiceImplementation implements ProductService {
         return List.of();
     }
 
+
     @Override
-    public Page<Product> getAllProduct(String category, List<String> colors,
-                                       List<String> sizes, Integer minPrice, Integer maxPrice, Integer minDiscount,
-                                       String sort, String stock, Integer pageNumber, Integer pageSize) {
+    public Page<Product> getAllProduct(String category, List<String>colors,
+                                       List<String> sizes, Integer minPrice, Integer maxPrice,
+                                       Integer minDiscount,String sort, String stock, Integer pageNumber, Integer pageSize ) {
+
         Pageable pageable = PageRequest.of(pageNumber, pageSize);
-        List<Product> products = productRepo.filterProducts(category,minPrice,maxPrice,minDiscount,sort);
+
+        List<Product> products = productRepo.filterProducts(category, minPrice, maxPrice, minDiscount, sort);
 
         if (!colors.isEmpty()) {
             products = products.stream()
@@ -143,18 +147,23 @@ public class ProductServiceImplementation implements ProductService {
                     .collect(Collectors.toList());
         }
 
-        if(stock !=null){
-            if(stock.equals("in_stock")){
+        if(stock!=null) {
+            if(stock.equals("in_stock")) {
                 products=products.stream().filter(p->p.getQuantity()>0).collect(Collectors.toList());
-            } else if (stock.equals("out_of_stock")) {
-                products = products.stream().filter(p->p.getQuantity()<1).collect(Collectors.toList());
             }
-        }
-        int startIndex = (int)pageable.getOffset();
-        int endIndex = Math.min(startIndex + pageable.getPageSize(), products.size());
-        List<Product> pageContent = products.subList(startIndex,endIndex);
-        Page<Product> filteredProduct = new PageImpl<>(pageContent,pageable, products.size());
-        return filteredProduct;
+            else if (stock.equals("out_of_stock")) {
+                products=products.stream().filter(p->p.getQuantity()<1).collect(Collectors.toList());
+            }
 
+
+        }
+        int startIndex = (int) pageable.getOffset();
+        int endIndex = Math.min(startIndex + pageable.getPageSize(), products.size());
+
+        List<Product> pageContent = products.subList(startIndex, endIndex);
+        Page<Product> filteredProducts = new PageImpl<>(pageContent, pageable, products.size());
+        return filteredProducts; // If color list is empty, do nothing and return all products
     }
+
 }
+
