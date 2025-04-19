@@ -41,7 +41,9 @@ public class AppConfig {
 
                                                 "http://localhost:3000",
                                                 "http://localhost:4000",
-                                                "http://localhost:4200"
+                                                "http://localhost:4200",
+                                        "https://ecom-tushartalmales-projects.vercel.app",
+                                        "https://ecom-git-main-tushartalmales-projects.vercel.app"
 
 
                                         )
