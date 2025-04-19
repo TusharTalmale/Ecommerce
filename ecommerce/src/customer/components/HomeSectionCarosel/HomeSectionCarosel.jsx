@@ -5,7 +5,7 @@ import 'react-alice-carousel/lib/alice-carousel.css';
 import HomeSectionCard from '../HomeSectionCard/HomeSectionCard.jsx';
 import KeyboardArrowLeftIcon from '@mui/icons-material/KeyboardArrowLeft';
 import { Button } from '@mui/material';
-import { mens_kurta } from '../../../Data/Men/Men_kurta.js';
+import { mens_kurta } from '../../../Data/Men/Mmen_kurta.js';
 
 const HomeSectionCarosel = ({data =[],sectionName}) => {
   // Start with 0 for the first page of items
@@ -55,7 +55,7 @@ const HomeSectionCarosel = ({data =[],sectionName}) => {
           responsive={responsive}
           disableDotsControls
           animationType="fadeout"
-          animationDuration={2000}
+          animationDuration={3000}
         />
         {endIndex < data.length && (
           <Button

@@ -16,7 +16,7 @@ import {
 } from '@headlessui/react'
 import { XMarkIcon } from '@heroicons/react/24/outline'
 import { ChevronDownIcon, FunnelIcon, MinusIcon, PlusIcon, Squares2X2Icon } from '@heroicons/react/20/solid'
-import { mens_kurta } from '../../../Data/Men/Men_kurta.js';
+import { mens_kurta } from '../../../Data/Men/Mmen_kurta.js';
 import ProductCard from './ProductCard'
 import { filters, singleFilter } from './filtersdata.js'
 import {
@@ -89,7 +89,7 @@ export default function Product() {
     const [minPrice, maxPrice] =
       price === null ? [0, 0] : price.split("-").map(Number);
     const data = {
-      category: param.lavelThree,
+      category: param.levelThree,
       colors: colorValue || [],
       sizes: sizeValue || [],
       minPrice: minPrice || 0,
@@ -102,7 +102,7 @@ export default function Product() {
     };
     dispatch(findProducts(data));
   }, [
-    param.lavelThree,
+    param.levelThree,
     colorValue,
     sizeValue,
     price,
@@ -541,12 +541,14 @@ export default function Product() {
                 {/* pagination section */}
                 <section className="w-full px-[3.6rem]">
                     <div className="mx-auto px-4 py-5 flex justify-center shadow-lg border rounded-md">
-                        <Pagination
-                        count={customersProduct.products?.totalPages}
-                        color="primary"
-                        className=""
-                        onChange={handlePaginationChange}
-                        />
+                       
+                
+                    <Pagination
+  count={customersProduct.products?.page?.totalPages || 1}
+  onChange={handlePaginationChange}
+  color="primary"
+/>
+
                     </div>
                 </section>
 

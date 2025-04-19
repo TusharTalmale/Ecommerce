@@ -1,10 +1,16 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { RadioGroup } from "@headlessui/react";
 import { Box, Button, Grid, LinearProgress, Rating } from "@mui/material";
 import ProductReviewCard from "./ProductReview";
-import { mens_kurta } from "../../../Data/Men/Men_kurta";
 import HomeSectionCard from '../HomeSectionCard/HomeSectionCard.jsx';
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { findProductById } from "../../../Redux/Customers/Product/Action.js";
+import { getAllReviews } from "../../../Redux/Customers/Review/Action.js";
+import { addItemToCart } from "../../../Redux/Customers/Cart/Action.js";
+import { gounsPage1 } from "../../../Data/Gouns/Ggouns.js";
+import { mens_kurta } from "../../../Data/Men/Mmen_kurta.js";
+
 
 const product = {
   name: "Basic Tee 6-Pack",
@@ -16,7 +22,7 @@ const product = {
   ],
   images: [
     {
-      src: "data:image/png;base64,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",
+      src: "https://tailwindui.com/img/ecommerce-images/product-page-02-secondary-product-shot.jpg",
       alt: "Two each of gray, white, and black shirts laying flat.",
     },
     {
@@ -32,13 +38,18 @@ const product = {
       alt: "Model wearing plain white basic tee.",
     },
   ],
+  colors: [
+    { name: "White", class: "bg-white", selectedClass: "ring-gray-400" },
+    { name: "Gray", class: "bg-gray-200", selectedClass: "ring-gray-400" },
+    { name: "Black", class: "bg-gray-900", selectedClass: "ring-gray-900" },
+  ],
   sizes: [
     { name: "S", inStock: true },
     { name: "M", inStock: true },
     { name: "L", inStock: true },
   ],
   description:
-    'The Basic Tee 6-Pack allows you to fully express your vibrant personality with three grayscale options.',
+    'The Basic Tee 6-Pack allows you to fully express your vibrant personality with three grayscale options. Feeling adventurous? Put on a heather gray tee. Want to be a trendsetter? Try our exclusive colorway: "Black". Need to add an extra pop of color to your outfit? Our white tee has you covered.',
   highlights: [
     "Hand cut and sewn locally",
     "Dyed with our proprietary colors",
@@ -46,7 +57,7 @@ const product = {
     "Ultra-soft 100% cotton",
   ],
   details:
-    'The 6-Pack includes two black, two white, and two heather gray Basic Tees.',
+    'The 6-Pack includes two black, two white, and two heather gray Basic Tees. Sign up for our subscription service and be the first to get new, exciting colors, like our upcoming "Charcoal Gray" limited release.',
 };
 
 const reviews = { href: "#", average: 4, totalCount: 117 };
@@ -60,13 +71,28 @@ export default function ProductDetails() {
   const [activeImage, setActiveImage] = useState(null);
   const [selectedSize, setSelectedSize] = useState();
   const navigate = useNavigate();
-  
+  const dispatch = useDispatch();
+  const customersProduct = useSelector((store) => store.customersProduct);
+  const { productId } = useParams();
+  const jwt = localStorage.getItem("jwt"); 
+  console.log("param",productId,customersProduct.product)
+const param = useParams()
+
   const handleSetActiveImage = (image) => {
     setActiveImage(image);
   };
-  const handleAddCart =( ) =>{
-    navigate("/cart")
-  }
+  const handleAddCart = () => {
+    const data = { productId : param.productId, size: selectedSize.name };
+    dispatch(addItemToCart({ data, jwt }));
+    navigate("/cart");
+  };
+  useEffect(() => {
+    const data = { productId: Number(productId), jwt };
+    dispatch(findProductById(data));
+    dispatch(getAllReviews(productId));
+  }, [productId]);
+
+
   return (
     <div className="bg-white lg:px-20">
       <div className="pt-6">
@@ -104,7 +130,7 @@ export default function ProductDetails() {
                 aria-current="page"
                 className="font-medium text-gray-500 hover:text-gray-600"
               >
-                {product.name}
+               { customersProduct.product?.brand}
               </a>
             </li>
           </ol>
@@ -114,38 +140,37 @@ export default function ProductDetails() {
         <section className="grid grid-cols-1 gap-x-8 gap-y-10 lg:grid-cols-2 px-4 pt-10">
           {/* Image Gallery */}
           <div className="flex flex-col items-center">
-            <div className="overflow-hidden rounded-lg max-w-[30rem] max-h-[35rem]">
-              <img
-                src={product.images[0].src}
+            <div className="overflow-hidden rounded-lg  max-h-[25rem]">
+            <img
+                src={activeImage?.src || customersProduct?.product?.imageUrl}                
                 alt={product.images[0].alt}
                 className="h-full w-full object-cover object-center"
               />
             </div>
             <div className="flex flex-wrap space-x-5 justify-center">
-              {product.images.map((image, index) => (
-                <div
-                  key={index}
-                  className="aspect-h-2 aspect-w-3 overflow-hidden rounded-lg max-w-[5rem] max-h-[5rem] mt-4 cursor-pointer"
-                // onClick={() => setActiveImage(image)} // Functionality to be implemented
+            {/* {product.images.map((image,i) => (
+                <div key={i}
+                  onClick={() => handleSetActiveImage(image)}
+                  className="aspect-h-2 aspect-w-3 overflow-hidden rounded-lg max-w-[5rem] max-h-[5rem] mt-4"
                 >
                   <img
                     src={image.src}
-                    alt={image.alt}
+                    alt={product.images[1].alt}
                     className="h-full w-full object-cover object-center"
                   />
                 </div>
-              ))}
-            </div>
+              ))} */}
+          </div>
           </div>
 
-          {/* Product Info */}
-          <div className="lg:col-span-1 mx-auto max-w-2xl px-4 pb-16 sm:px-6 lg:max-w-7xl lg:px-8 lg:pb-24">
+                  {/* Product info */}
+                  <div className="lg:col-span-1 mx-auto max-w-2xl px-4 pb-16 sm:px-6  lg:max-w-7xl  lg:px-8 lg:pb-24">
             <div className="lg:col-span-2">
               <h1 className="text-lg lg:text-xl font-semibold tracking-tight text-gray-900  ">
-                {product?.brand}
+                {customersProduct.product?.brand}
               </h1>
               <h1 className="text-lg lg:text-xl tracking-tight text-gray-900 opacity-60 pt-1">
-                {product?.name}
+                {customersProduct.product?.title}
               </h1>
             </div>
 
@@ -154,13 +179,13 @@ export default function ProductDetails() {
               <h2 className="sr-only">Product information</h2>
               <div className="flex space-x-5 items-center text-lg lg:text-xl tracking-tight text-gray-900 mt-6">
                 <p className="font-semibold">
-                  ₹96
+                  ₹{customersProduct.product?.discountedPrice}
                 </p>
                 <p className="opacity-50 line-through">
-                  ₹996
+                  ₹{customersProduct.product?.price}
                 </p>
                 <p className="text-green-600 font-semibold">
-                  57% Off
+                  {customersProduct.product?.discountPersent}% Off
                 </p>
               </div>
 
@@ -181,8 +206,14 @@ export default function ProductDetails() {
                   <div className="flex items-center justify-between">
                     <h3 className="text-sm font-medium text-gray-900">Size</h3>
                   </div>
-                  <RadioGroup value={selectedSize} onChange={setSelectedSize} className="mt-4">
-                    <RadioGroup.Label className="sr-only">Choose a size</RadioGroup.Label>
+                  <RadioGroup
+                    value={selectedSize}
+                    onChange={setSelectedSize}
+                    className="mt-4"
+                  >
+                    <RadioGroup.Label className="sr-only">
+                      Choose a size
+                    </RadioGroup.Label>
                     <div className="grid grid-cols-4 gap-4 sm:grid-cols-8 lg:grid-cols-10">
                       {product.sizes.map((size) => (
                         <RadioGroup.Option
@@ -199,44 +230,6 @@ export default function ProductDetails() {
                             )
                           }
                         >
-                          {/* {({ active, checked }) => (
-                            <>
-                              <RadioGroup.Label as="span">{size.name}</RadioGroup.Label>
-                              {size.inStock && (
-                                <span
-                                  className={classNames(
-                                    active ? "border" : "border-2",
-                                    checked ? "border-indigo-500" : "border-transparent",
-                                    "pointer-events-none absolute -inset-px rounded-md"
-                                  )}
-                                  aria-hidden="true"
-                                />
-                              )
-                              // : (
-                              //   <span
-                              //     aria-hidden="true"
-                              //     className="pointer-events-none absolute -inset-px rounded-md border-2 border-gray-200"
-                              //   >
-                              //     <svg
-                              //       className="absolute inset-0 h-full w-full stroke-2 text-gray-200"
-                              //       viewBox="0 0 100 100"
-                              //       preserveAspectRatio="none"
-                              //       stroke="currentColor"
-                              //     >
-                              //       <line
-                              //         x1={0}
-                              //         y1={100}
-                              //         x2={100}
-                              //         y2={0}
-                              //         vectorEffect="non-scaling-stroke"
-                              //       />
-                              //     </svg>
-                              //   </span>
-                              // )
-                              
-                              }
-                            </>
-                          )} */}
                           {({ active, checked }) => (
                             <>
                               <RadioGroup.Label as="span">
@@ -283,10 +276,11 @@ export default function ProductDetails() {
                 </div>
 
                 <Button
+                onClick={handleAddCart}
                   variant="contained"
                   type="submit"
                   sx={{ padding: ".8rem 2rem", marginTop: "2rem", bgcolor: "#9155fd" }}
-                  onClick={handleAddCart}
+                  
                 >
                   Add To Cart
                 </Button>
@@ -298,7 +292,7 @@ export default function ProductDetails() {
               <div>
                 <h3 className="sr-only">Description</h3>
                 <div className="space-y-6">
-                  <p className="text-base text-gray-900">{product.description}</p>
+                  <p className="text-base text-gray-900">{customersProduct.product?.description}</p>
                 </div>
               </div>
               <div className="mt-10">
@@ -317,66 +311,168 @@ export default function ProductDetails() {
               <div className="mt-10">
                 <h2 className="text-sm font-medium text-gray-900">Details</h2>
                 <div className="mt-4 space-y-6">
-                  <p className="text-sm text-gray-600">{product.details}</p>
+                  <p className="text-sm text-gray-600">{customersProduct.product?.details}</p>
                 </div>
               </div>
             </div>
           </div>
         </section>
-
-        {/* Ratings and Reviews */}
+        {/* rating and review section */}
         <section className="">
-          <h1 className="font-semibold text-lg pb-4">Recent Review & Ratings</h1>
-          <div className="border p-3">
+          <h1 className="font-semibold text-lg pb-4">
+            Recent Review & Ratings
+          </h1>
+
+          <div className="border p-5">
             <Grid container spacing={7}>
               <Grid item xs={7}>
                 <div className="space-y-5">
-                  {/* Map over reviews if available */}
-
-                  {[1, 1, 1].map((item, i) => <ProductReviewCard key={i} />)}
+                  {customersProduct.product?.reviews.map((item, i) => (
+                    <ProductReviewCard item={item} />
+                  ))}
                 </div>
               </Grid>
+
               <Grid item xs={5}>
                 <h1 className="text-xl font-semibold pb-1">Product Ratings</h1>
                 <div className="flex items-center space-x-3 pb-10">
-                  <Rating name="read-only" value={4.6} precision={0.5} readOnly />
+                  <Rating
+                    name="read-only"
+                    value={4.6}
+                    precision={0.5}
+                    readOnly
+                  />
+
                   <p className="opacity-60">42807 Ratings</p>
                 </div>
-
-                {[
-                  { label: "Excellent", value: 40, count: 19259, color: "#4caf50" }, // Green
-                  { label: "Very Good", value: 30, count: 19259, color: "#8bc34a" }, // Light Green
-                  { label: "Good", value: 25, count: 19259, color: "#ff9800" }, // Orange
-                  { label: "Average", value: 21, count: 19259, color: "#ffb300" }, // Amber
-                  { label: "Poor", value: 10, count: 19259, color: "#f44336" }, // Red
-                ].map((rating, index) => (
-                  <Box key={index}>
-                    <Grid container justifyContent="center" alignItems="center" gap={2}>
-                      <Grid item xs={2}>
-                        <p className="p-0">{rating.label}</p>
-                      </Grid>
-                      <Grid item xs={7}>
-                        <LinearProgress
-                          sx={{
-                              bgcolor: "#d0d0d0",
-                              borderRadius: 4,
-                              height: 7,
-                              "& .MuiLinearProgress-bar": {
-                                backgroundColor: rating.color, // Custom bar color
-                              },
-                            }}
-                            variant="determinate"
-                            value={rating.value}
-                        />
-                      </Grid>
-                      <Grid item xs={2}>
-                        <p className="opacity-50 p-2">{rating.count}</p>
-                      </Grid>
+                <Box>
+                  <Grid
+                    container
+                    justifyContent="center"
+                    alignItems="center"
+                    gap={2}
+                  >
+                    <Grid xs={2}>
+                      <p className="p-0">Excellent</p>
                     </Grid>
-                  </Box>
-                ))}
+                    <Grid xs={7}>
+                      <LinearProgress
+                        className=""
+                        sx={{ bgcolor: "#d0d0d0", borderRadius: 4, height: 7 }}
+                        variant="determinate"
+                        value={40}
+                        color="success"
+                      />
+                    </Grid>
+                    <Grid xs={2}>
+                      <p className="opacity-50 p-2">19259</p>
+                    </Grid>
+                  </Grid>
+                </Box>
+                <Box>
+                  <Grid
+                    container
+                    justifyContent="center"
+                    alignItems="center"
+                    gap={2}
+                  >
+                    <Grid xs={2}>
+                      <p className="p-0">Very Good</p>
+                    </Grid>
+                    <Grid xs={7}>
+                      <LinearProgress
+                        className=""
+                        sx={{ bgcolor: "#d0d0d0", borderRadius: 4, height: 7 }}
+                        variant="determinate"
+                        value={30}
+                        color="success"
+                      />
+                    </Grid>
+                    <Grid xs={2}>
+                      <p className="opacity-50 p-2">19259</p>
+                    </Grid>
+                  </Grid>
+                </Box>
+                <Box>
+                  <Grid
+                    container
+                    justifyContent="center"
+                    alignItems="center"
+                    gap={2}
+                  >
+                    <Grid xs={2}>
+                      <p className="p-0">Good</p>
+                    </Grid>
+                    <Grid xs={7}>
+                      <LinearProgress
+                        className="bg-[#885c0a]"
+                        sx={{ bgcolor: "#d0d0d0", borderRadius: 4, height: 7 }}
+                        variant="determinate"
+                        value={25}
+                        color="orange"
+                      />
+                    </Grid>
+                    <Grid xs={2}>
+                      <p className="opacity-50 p-2">19259</p>
+                    </Grid>
+                  </Grid>
+                </Box>
+                <Box>
+                  <Grid
+                    container
+                    justifyContent="center"
+                    alignItems="center"
+                    gap={2}
+                  >
+                    <Grid xs={2}>
+                      <p className="p-0">Avarage</p>
+                    </Grid>
+                    <Grid xs={7}>
+                      <LinearProgress
+                        className=""
+                        sx={{
+                          bgcolor: "#d0d0d0",
+                          borderRadius: 4,
+                          height: 7,
+                          "& .MuiLinearProgress-bar": {
+                            bgcolor: "#885c0a", // stroke color
+                          },
+                        }}
+                        variant="determinate"
+                        value={21}
+                        color="success"
+                      />
+                    </Grid>
+                    <Grid xs={2}>
+                      <p className="opacity-50 p-2">19259</p>
+                    </Grid>
+                  </Grid>
+                </Box>
+                <Box>
+                  <Grid
+                    container
+                    justifyContent="center"
+                    alignItems="center"
+                    gap={2}
+                  >
+                    <Grid xs={2}>
+                      <p className="p-0">Poor</p>
+                    </Grid>
+                    <Grid xs={7}>
+                      <LinearProgress
+                        className=""
+                        sx={{ bgcolor: "#d0d0d0", borderRadius: 4, height: 7 }}
+                        variant="determinate"
+                        value={10}
+                        color="error"
+                      />
+                    </Grid>
+                    <Grid xs={2}>
+                      <p className="opacity-50 p-2">19259</p>
+                    </Grid>
+                  </Grid>
+                </Box>
               </Grid>
-
             </Grid>
           </div>
         </section>
@@ -385,10 +481,17 @@ export default function ProductDetails() {
         <section className="pt-10">
           <h1 className="py-5 text-xl font-bold">Similar Products</h1>
           <div className="flex flex-wrap space-y-5"> 
-            {mens_kurta.map((item) => (
+          {/* {mens_kurta.map((item) => (
               <HomeSectionCard product={item} />
             ))}
-          
+           */}
+           {mens_kurta
+  .sort(() => 0.5 - Math.random()) // shuffle array
+  .slice(0, 10)                     // take first 50
+  .map((item) => (
+    <HomeSectionCard key={item.id} product={item} />
+))}
+
           </div>
         </section>
       </div>

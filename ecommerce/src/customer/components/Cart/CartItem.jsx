@@ -1,25 +1,35 @@
-import React from "react";
+import React, { useState } from "react";
 import { Button, IconButton } from "@mui/material";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import RemoveCircleOutlineIcon from "@mui/icons-material/RemoveCircleOutline";
 import { useDispatch } from "react-redux";
+import { getCart, removeCartItem, updateCartItem } from "../../../Redux/Customers/Cart/Action";
 
 const CartItem = ({ item,showButton }) => {
   const dispatch = useDispatch();
   const jwt = localStorage.getItem("jwt");
-
   const handleRemoveItemFromCart = () => {
     const data = { cartItemId: item?.id, jwt };
-    dispatch(removeCartItem(data));
-  }
-  const handleUpdateCartItem = () =>{
+    dispatch(removeCartItem(data)).then(() => {
+      dispatch(getCart(jwt)); // 👈 Refresh cart
+    });
+  };
+  const [c, setc] = useState(1);
+  
+  const handleUpdateCartItem = (num) => {
+    const newQuantity = item.quantity + num;
+    if (newQuantity < 1) return;
+  setc(newQuantity)
     const data = {
-      data:{quantity:item.quantity+num} ,
-      cartItemId : item.id?.id ,
-      jwt }
-    dispatch(updateCartItem(data))
-
-  }
+      data: { quantity: newQuantity },
+      cartItemId: item?.id,
+      jwt,
+    };
+    dispatch(updateCartItem(data)).then(() => {
+      dispatch(getCart(jwt)); // 👈 Refresh cart
+    });
+  };
+  
  return (
   <>
   {item?.quantity > 0 &&  <div className="p-5 shadow-lg border rounded-md">
@@ -44,7 +54,19 @@ const CartItem = ({ item,showButton }) => {
               {item?.product.discountPersent}% off
             </p>
           </div>
+          
         </div>
+        
+        <div className="ml-auto text-right space-y-1">
+  <p className="font-medium">  Exact Price : ₹{item?.product.price * c}</p>
+  <p className="font-medium">
+    Exact Discount: ₹
+    {(item?.product.price - item?.product.discountedPrice) * c}
+  </p>
+  <p className="font-medium">
+    Final Price: ₹{item?.product.discountedPrice * c}
+  </p>
+</div>
       </div>
      {showButton&& <div className="lg:flex items-center lg:space-x-10 pt-4">
         <div className="flex items-center space-x-2 ">
@@ -71,10 +93,12 @@ const CartItem = ({ item,showButton }) => {
           <Button onClick={handleRemoveItemFromCart} variant="text">
             Remove{" "}
           </Button>
-          
+
         </div>
+     
       </div>
     }
+    
   
     </div>}
     </>);
