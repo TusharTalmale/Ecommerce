@@ -47,12 +47,12 @@ public class AdminOrderController {
         Order order=orderService.cancledOrder(orderId);
         return new ResponseEntity<Order>(order,HttpStatus.ACCEPTED);
     }
-    @PutMapping("/{orderId}/delete")
-    public ResponseEntity<Order> deletedOrderHandler(@PathVariable Long orderId, @RequestHeader("Authorization") String jwt) throws OrderException{
-        Order order=orderService.cancledOrder(orderId);
-        ApiResponse res = new ApiResponse("Order deleted successfully" , true);
-        System.out.println("delete method working");
-        return new ResponseEntity<Order>(order,HttpStatus.ACCEPTED);
+    @DeleteMapping("/{orderId}/delete")
+    public ResponseEntity<ApiResponse> deleteOrderHandler(@PathVariable Long orderId, @RequestHeader("Authorization") String jwt) throws OrderException{
+        orderService.deleteOrder(orderId);
+        ApiResponse res=new ApiResponse("Order Deleted Successfully",true);
+        System.out.println("delete method working....");
+        return new ResponseEntity<>(res,HttpStatus.ACCEPTED);
     }
 
 }
